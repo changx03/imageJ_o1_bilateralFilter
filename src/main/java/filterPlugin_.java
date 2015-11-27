@@ -46,8 +46,11 @@ public class filterPlugin_ implements PlugInFilter {
 //        show8bitImage(triSmoothImg, rec, "integralTriangleR" + radius);
         
         // polynomial filter
-        int radius = 3;
+        int radius = 2;
         SpatialFilters sf = new SpatialFilters(integral);
+        double[] convoPoly = sf.convolutionalPolynomial(radius);
+        show8bitImage(convoPoly, rec, "convolutionalPolySmoothR" + radius);
+        
         double[] polySmoothImg = sf.integralPolynomial(radius);
         show8bitImage(polySmoothImg, rec, "integralPolySmoothR" + radius);
     }
