@@ -18,7 +18,8 @@ public class filterPlugin_ implements PlugInFilter {
 
     // parameters from dialog
     private final String[] filterChoices = {"Integral arithmetic mean", "Integral triangular filter", "Integral polynomial filter", "Convolutional polynomial filter"};
-
+    private final String[] titleAppend = {"null", "integralMeanR", "integralTriR", "integralPolyR", "convoPolyR"};
+    private int titleAppendIdx = 0;
     private enum Filters {
 
         INT_MEAN, INT_TRI, INT_POLY, CON_POLY
@@ -80,25 +81,26 @@ public class filterPlugin_ implements PlugInFilter {
         switch (filter) {
             case INT_MEAN:  // integral arithmetic mean filter
                 outImg = sf.integralMean(radius);
-                outputImageTitle = imageTitle + "_integralMeanR" + radius;
+                titleAppendIdx = 1;
                 break;
             case INT_TRI:   // triangular filter
                 outImg = sf.integralTriangular(radius);
-                outputImageTitle = imageTitle + "_integralTriR" + radius;
+                titleAppendIdx = 2;
                 break;
             case INT_POLY:  // polynomial filter
                 outImg = sf.integralPolynomial(radius);
-                outputImageTitle = imageTitle + "_integralPolyR" + radius;
+                titleAppendIdx = 3;
                 break;
             case CON_POLY:
                 outImg = sf.convolutionalPolynomial(radius);
-                outputImageTitle = imageTitle + "_convoPolyR" + radius;
+                titleAppendIdx = 4;
                 break;
             default:
                 outImg = new double[rec.width * rec.height];
-                outputImageTitle = imageTitle;
+                titleAppendIdx = 0;
                 break;
         }
+        outputImageTitle = imageTitle + "_" + titleAppend[titleAppendIdx] + radius;
         show8bitImage(outImg, rec, outputImageTitle);
     }
 
