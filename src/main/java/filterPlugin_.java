@@ -28,15 +28,28 @@ public class filterPlugin_ implements PlugInFilter {
         IntegralImage integral = new IntegralImage(pixels, rec);// getIntegralImg image
 
         // display getIntegralImg image in new window
-        //show32bitImage(integral.integral, rec, "IntegralSum");
-        // box filter (arithmetic mean)
-//        int radius = 2;
-//        double[] meanPixels = SpatialFilters.integralMean(integral, radius);
-//        show8bitImage(meanPixels, rec, "IntegralMeanR" + radius);
+//        show32bitImage(integral.integralImg, rec, "IntegralSum");
+//        integral.initialIntegralImgs4Polynomial();
+//        show32bitImage(integral.zIntegral, rec, "zIntegral");
+//        show32bitImage(integral.z2Integral, rec, "z2Integral");
+
+        // integral arithmetic mean filter
+//        int r = 5;
+//        SpatialFilters sf = new SpatialFilters(integral);
+//        double[] meanImg = sf.integralMean(r);
+//        show8bitImage(meanImg, rec, "integralMeanR" + r);
+        
         // triangular filter
-        int radius = 5;
-        double[] triSmoothImg = SpatialFilters.integralTriangular(pixels, integral, radius);
-        show8bitImage(triSmoothImg, rec, "IntegralTriangleR" + radius);
+//        int radius = 5;
+//        SpatialFilters sf = new SpatialFilters(integral);
+//        double[] triSmoothImg = sf.integralTriangular(radius);
+//        show8bitImage(triSmoothImg, rec, "integralTriangleR" + radius);
+        
+        // polynomial filter
+        int radius = 3;
+        SpatialFilters sf = new SpatialFilters(integral);
+        double[] polySmoothImg = sf.integralPolynomial(radius);
+        show8bitImage(polySmoothImg, rec, "integralPolySmoothR" + radius);
     }
 
     private void show8bitImage(double[] image, Rectangle rec, String imageTitle) {

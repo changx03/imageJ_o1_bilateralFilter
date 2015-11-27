@@ -62,13 +62,14 @@ public class IntegralImage {
     }
 
     /**
-     * InitializeIntegralImgsForPolynomial
-     *
-     * create 2 integral images for O(1) polynomial filter f(k) = 1 - k^2
+     * initialIntegralImgs4Polynomial
+
+ create 2 integral images for O(1) polynomial filter f(k) = 1 - k^2
      */
-    public void InitializeIntegralImgsForPolynomial() {
+    public void initialIntegralImgs4Polynomial() {
         float[] zImg = new float[width * height];
         float[] z2Img = new float[width * height];
+
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 float pointNorm = (float) computePointNorm(new Point(x, y));
@@ -88,7 +89,7 @@ public class IntegralImage {
         }
     }
 
-    private static double computePointNorm(Point p) {
+    public static double computePointNorm(Point p) {
         return Math.sqrt(p.x * p.x + p.y * p.y);
     }
 
@@ -97,31 +98,32 @@ public class IntegralImage {
      *
      * compute the local same from iIntegralImg image
      *
+     * @param interal the integral image you want to use
      * @param leftTop the left top corner above the kernel
      * @param rightBottom the right bottom corner inside the kernel
      */
-    public double getSum(Point leftTop, Point rightBottom) {
+    public double getSum(double[] interal, Point leftTop, Point rightBottom) {
         Point rightTop = new Point(rightBottom.x, leftTop.y);
         Point leftBottom = new Point(leftTop.x, rightBottom.y);
 
         // 0-1
         // 2-3
         double[] p = new double[4];
-        p[3] = integralImg[rightBottom.y * width + rightBottom.x];
+        p[3] = interal[rightBottom.y * width + rightBottom.x];
         if (leftTop.x < 0 || leftTop.y < 0) {
             p[0] = 0;
         } else {
-            p[0] = integralImg[leftTop.y * width + leftTop.x];
+            p[0] = interal[leftTop.y * width + leftTop.x];
         }
         if (rightTop.x < 0 || rightTop.y < 0) {
             p[1] = 0;
         } else {
-            p[1] = integralImg[rightTop.y * width + rightTop.x];
+            p[1] = interal[rightTop.y * width + rightTop.x];
         }
         if (leftBottom.x < 0 || leftBottom.y < 0) {
             p[2] = 0;
         } else {
-            p[2] = integralImg[leftBottom.y * width + leftBottom.x];
+            p[2] = interal[leftBottom.y * width + leftBottom.x];
         }
         double sum = p[3] - p[1] - p[2] + p[0];
         return sum;
