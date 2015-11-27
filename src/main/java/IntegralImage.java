@@ -7,6 +7,10 @@ public class IntegralImage {
     double[] integral;
     int height;
     int width;
+    
+    // distance norm for polynomial filters f(k) = 1 - k^(n)
+    double[] zIntegral;
+    double[] squareZIntegral;
 
     IntegralImage(float[] image, Rectangle rec) {
         if (image == null || rec.height <= 0 || rec.width <= 0) {
@@ -35,7 +39,10 @@ public class IntegralImage {
                         + image[y * width + x];
             }
         }
-
+        
+        // optional integral images
+        zIntegral = null;
+        squareZIntegral = null;
     }
 
     double getSum(Point leftTop, Point rightBottom) {
