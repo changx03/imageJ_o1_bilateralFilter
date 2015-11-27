@@ -29,12 +29,10 @@ public class filterPlugin_ implements PlugInFilter {
 
         // display getIntegralImg image in new window
         //show32bitImage(integral.integral, rec, "IntegralSum");
-        
         // box filter (arithmetic mean)
 //        int radius = 2;
 //        double[] meanPixels = SpatialFilters.integralMean(integral, radius);
 //        show8bitImage(meanPixels, rec, "IntegralMeanR" + radius);
-        
         // triangular filter
         int radius = 5;
         double[] triSmoothImg = SpatialFilters.integralTriangular(pixels, integral, radius);
@@ -43,7 +41,7 @@ public class filterPlugin_ implements PlugInFilter {
 
     private void show8bitImage(double[] image, Rectangle rec, String imageTitle) {
         ByteProcessor bp = new ByteProcessor(rec.width, rec.height);
-        
+
         for (int y = 0; y < rec.height; y++) {
             for (int x = 0; x < rec.width; x++) {
                 bp.putPixelValue(x, y, image[y * rec.width + x]);
@@ -52,10 +50,10 @@ public class filterPlugin_ implements PlugInFilter {
         ImagePlus imagePlus = new ImagePlus(imageTitle, bp);
         imagePlus.show();
     }
-    
-        private void show32bitImage(double[] image, Rectangle rec, String imageTitle) {
+
+    private void show32bitImage(double[] image, Rectangle rec, String imageTitle) {
         FloatProcessor fp = new FloatProcessor(rec.width, rec.height);
-        
+
         for (int y = 0; y < rec.height; y++) {
             for (int x = 0; x < rec.width; x++) {
                 fp.putPixelValue(x, y, image[y * rec.width + x]);
@@ -64,7 +62,7 @@ public class filterPlugin_ implements PlugInFilter {
         ImagePlus imagePlus = new ImagePlus(imageTitle, fp);
         imagePlus.show();
     }
-            
+
     // Calculate the getIntegralImg image from a float array with given height and width
     public static void main(String[] args) {
         // set the plugins.dir property to make the plugin appear in the Plugins menu
