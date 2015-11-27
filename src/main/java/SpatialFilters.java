@@ -22,7 +22,7 @@ public class SpatialFilters {
         return outImg;
     }
     
-    public static double[] integralTriangular(float[] inputImg, IntegralImage integral, int radius) {
+    public static double[] integralTriangular(IntegralImage integral, int radius) {
         int height = integral.height;
         int width = integral.width;
         double[] outImg = new double[height * width];
@@ -36,7 +36,7 @@ public class SpatialFilters {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 if (x - radius >= 0 && y - radius >= 0 && x + radius < width && y + radius < height) {
-                    double newPixelValue = inputImg[y * width + height];
+                    double newPixelValue = integral.originImg[y * width + height];
                     for(int r = 1; r <= radius; r++) {
                     newPixelValue += integral.getSum(new Point(x - r -1, y - r -1), new Point(x + r, y + r));
                     }
@@ -48,4 +48,6 @@ public class SpatialFilters {
         }
         return outImg;
     }
+    
+    
 }
