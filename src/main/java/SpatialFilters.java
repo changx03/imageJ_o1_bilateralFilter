@@ -145,25 +145,39 @@ public class SpatialFilters {
         for(int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 if (x - radius >= 0 && y - radius >= 0 && x + radius < width && y + radius < height) {
-                    double I_p = ih.originalImg[y * width + x];
+                    float I_p = ih.originalImg[y * width + x];
                     double normFactor = 0;
                     double sumWeights = 0;
                     Point leftTop = new Point(x - radius - 1, y - radius - 1);
                     Point rightBot = new Point(x + radius, y + radius);
                     double[] histoP = ih.localHistogram(leftTop, rightBot);
-                    for (int ky = y - radius; ky <= y + radius; ky++) {
-                        for (int kx = x - radius; kx <= x + radius; kx++) {
-                            float I_k = ih.originalImg[y * width + x];
-                            double g_kp = Math.exp(-alpha * (I_k * I_k - 2 * I_p * I_k));
-                            int numOfBinAtK = ih.getBinNumber(I_k);
-                            double weight_pk = histoP[numOfBinAtK] * g_kp;
-                            sumWeights += I_k * weight_pk;
-                            normFactor += weight_pk;
-                        }
+                    int numOfBinAtP = ih.getBinNumber(I_p);
+                    for (int b = 0; b < ih.numOfBins; b++) {
+                        double g_kp = Math.exp(-alpha * (b * b - 2 * b * numOfBinAtP));
+                        double weight_pk = histoP[b] * g_kp;
+                        sumWeights += b * weight_pk;
+                        normFactor += weight_pk;
                     }
                     double pixVal = sumWeights / normFactor;
                     outImg[y * width + x] = pixVal;
                 }
+            }
+        }
+        return outImg;
+    }
+    
+    public double[] boxTriGaussian(int radius, double alpha) {
+        if(ih == null) {
+            throw new NullPointerException();
+        }
+        int imageSize = height * width;
+        double[] outImg = new double[imageSize];
+        double[] boxSpatial = integralTriangular(radius);
+        double[] intensityMap = integralHistoIntensityGaussian(radius, alpha);
+        
+        for(int y = 0; y < height; y++) {
+            for(int x = 0; x < width; x++) {
+                outImg[y * width + x] = boxSpatial[y * width + x] + intensityMap[y * width + x];
             }
         }
         return outImg;

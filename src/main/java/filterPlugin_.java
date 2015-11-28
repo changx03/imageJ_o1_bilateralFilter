@@ -23,12 +23,13 @@ public class filterPlugin_ implements PlugInFilter {
         "Integral triangular filter",
         "Integral polynomial filter",
         "Convolutional polynomial filter",
-        "Integral Hisotram Intensity"
+        "Integral Hisotram Intensity",
+        "Box triangular Gaussian Bilateral"
     };
 
     private enum Filters {
 
-        INT_MEAN, INT_TRI, INT_POLY, CON_POLY, INT_HIS_INTEN
+        INT_MEAN, INT_TRI, INT_POLY, CON_POLY, INT_HIS_INTEN, TRI_GAU_BI
     };
     private Filters filter;
     private int radius;
@@ -68,6 +69,8 @@ public class filterPlugin_ implements PlugInFilter {
             filter = Filters.CON_POLY;
         } else if (selectedChoice.equals(filterChoices[4])) {
             filter = Filters.INT_HIS_INTEN;
+        } else if (selectedChoice.equals(filterChoices[5])) {
+            filter = Filters.TRI_GAU_BI;
         }
 
         radius = (int) gd.getNextNumber();
@@ -90,10 +93,10 @@ public class filterPlugin_ implements PlugInFilter {
 //        integral.initialIntegralImgs4Polynomial();
 //        show32bitImage(integral.zIntegral, rec, "zIntegral");
 //        show32bitImage(integral.z2Integral, rec, "z2Integral");
-        
         String outputImageTitle;
         double[] outImg;
         SpatialFilters sf = new SpatialFilters(integral);
+        IntegralHistograms ih = null;
         switch (filter) {
             case INT_MEAN:  // integral arithmetic mean filter
                 outImg = sf.integralMean(radius);
@@ -112,10 +115,16 @@ public class filterPlugin_ implements PlugInFilter {
                 outputImageTitle = imageTitle + "_convoPolyR" + radius;
                 break;
             case INT_HIS_INTEN:
-                IntegralHistograms ih = new IntegralHistograms(pixels, rec, bitDepth, numOfBins);
+                ih = new IntegralHistograms(pixels, rec, bitDepth, numOfBins);
                 sf.SetIntegralHistograms(ih);
                 outImg = sf.integralHistoIntensityGaussian(radius, alpha);
                 outputImageTitle = imageTitle + "_intHistoIntensityR" + radius + "a" + alpha;
+                break;
+            case TRI_GAU_BI:
+                ih = new IntegralHistograms(pixels, rec, bitDepth, numOfBins);
+                sf.SetIntegralHistograms(ih);
+                outImg = sf.boxTriGaussian(radius, alpha);
+                outputImageTitle = imageTitle + "_TriGauBilateralR" + radius + "a" + alpha;
                 break;
             default:
                 outImg = new double[rec.width * rec.height];
