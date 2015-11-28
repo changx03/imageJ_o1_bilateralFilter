@@ -1,6 +1,7 @@
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.io.IOException;
 
 public class IntegralHistograms {
 
@@ -12,8 +13,9 @@ public class IntegralHistograms {
     int height;
     int bitDepth;
     int numOfGreylevels;
+    double interval;
 
-    public IntegralHistograms(float[] image, Rectangle rec, int depth, int numOfBins) {
+    public IntegralHistograms(float[] image, Rectangle rec, int depth, int numOfBins){
         this.numOfBins = numOfBins;
         width = rec.width;
         height = rec.height;
@@ -29,7 +31,7 @@ public class IntegralHistograms {
 
     private void computeHistogramRanges() {
         histoRanges = new double[numOfBins + 1];
-        double interval = numOfGreylevels / (double) numOfBins;
+        interval = numOfGreylevels / (double) numOfBins;
 
         // histoRanges[x-1] < I(x) <= histoRanges[x+1]
         histoRanges[0] = -1.0;
@@ -43,8 +45,44 @@ public class IntegralHistograms {
         return greyLevels;
     }
 
-    private void computePointHistogram() {
+    private int getBinNumber(float intensityLevel) {
+        int binNumber = (int) Math.floor((intensityLevel -0.001) / interval);
+        
+        if (intensityLevel <= histoRanges[1]) {
+            return 0;
+        } else if (binNumber >= numOfBins - 1 && histoRanges[numOfBins - 1] < intensityLevel) {
+            return numOfBins - 1;
+        } else {
+            return binNumber;
+        }
+    }
 
+    private void computePointHistogram() {
+        // origin
+        int BinNo = getBinNumber(originalImg[0]);
+        pointHisto[0][BinNo]++;
+        // first row
+        for (int x = 1; x < width; x++) {
+            BinNo = getBinNumber(originalImg[x]);
+            pointHisto[x] = pointHisto[x - 1].clone();
+            pointHisto[x][BinNo]++;
+        }
+        // first column
+        for (int y = 1; y < height; y++) {
+            BinNo = getBinNumber(originalImg[y * width]);
+            pointHisto[y * width] = pointHisto[(y -1) * width].clone();
+            pointHisto[y * width][BinNo]++;
+        }
+        // H(x,y|b) = H(x-1,y|b) + H(x,y-1|b) - H(x-1,y-1|b) + I(x,y)
+        for (int y = 1; y < height; y++) {
+            for (int x = 1; x < width; x++) {
+                BinNo = getBinNumber(originalImg[y * width + x]);
+                for (int b = 0; b < numOfBins; b++) {
+                    pointHisto[y * width + x][b] = pointHisto[y * width + x - 1][b] + pointHisto[(y -1) * width + x][b] - pointHisto[(y -1) * width + x -1][b];
+                }
+                pointHisto[y * width + x][BinNo]++;
+            }
+        }
     }
 
     public double[] localHistogram(Point leftTop, Point rightBottom) {
@@ -73,8 +111,8 @@ public class IntegralHistograms {
             lb = pointHisto[leftBottom.y * width + leftBottom.x];
         }
         // compute the new logal histogram
-        for (int i = 0; i < numOfBins; i++) {
-            pHisto[i] = rb[i] - lb[i] - rt[i] + lt[i];
+        for (int b = 0; b < numOfBins; b++) {
+            pHisto[b] = rb[b] - lb[b] - rt[b] + lt[b];
         }
         return pHisto;
     }
