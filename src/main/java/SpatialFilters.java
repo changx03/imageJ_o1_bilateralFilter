@@ -6,11 +6,23 @@ public class SpatialFilters {
     int height;
     int width;
     IntegralImage integral;
+    IntegralHistograms ih;
 
     public SpatialFilters(IntegralImage integral) {
         height = integral.height;
         width = integral.width;
         this.integral = integral;
+    }
+    
+    public SpatialFilters(IntegralImage integral, IntegralHistograms ih) {
+        height = integral.height;
+        width = integral.width;
+        this.integral = integral;
+        this.ih = ih;
+    }
+    
+    public void SetIntegralHistograms(IntegralHistograms ih) {
+        this.ih = ih;
     }
 
     public double[] integralMean(int radius) {
@@ -117,6 +129,39 @@ public class SpatialFilters {
                         }
                     }
                     pixVal /= normFactor;
+                    outImg[y * width + x] = pixVal;
+                }
+            }
+        }
+        return outImg;
+    }
+    
+    public double[] integralHistoIntensityGaussian(int radius, double alpha) {
+        if(ih == null) {
+            throw new NullPointerException();
+        }
+        double[] outImg = new double[height * width];
+        
+        for(int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (x - radius >= 0 && y - radius >= 0 && x + radius < width && y + radius < height) {
+                    double I_p = ih.originalImg[y * width + x];
+                    double normFactor = 0;
+                    double sumWeights = 0;
+                    Point leftTop = new Point(x - radius - 1, y - radius - 1);
+                    Point rightBot = new Point(x + radius, y + radius);
+                    double[] histoP = ih.localHistogram(leftTop, rightBot);
+                    for (int ky = y - radius; ky <= y + radius; ky++) {
+                        for (int kx = x - radius; kx <= x + radius; kx++) {
+                            float I_k = ih.originalImg[y * width + x];
+                            double g_kp = Math.exp(-alpha * (I_k * I_k - 2 * I_p * I_k));
+                            int numOfBinAtK = ih.getBinNumber(I_k);
+                            double weight_pk = histoP[numOfBinAtK] * g_kp;
+                            sumWeights += I_k * weight_pk;
+                            normFactor += weight_pk;
+                        }
+                    }
+                    double pixVal = sumWeights / normFactor;
                     outImg[y * width + x] = pixVal;
                 }
             }

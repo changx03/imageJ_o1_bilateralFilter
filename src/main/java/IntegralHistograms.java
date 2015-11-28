@@ -1,7 +1,6 @@
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.io.IOException;
 
 public class IntegralHistograms {
 
@@ -15,7 +14,7 @@ public class IntegralHistograms {
     int numOfGreylevels;
     double interval;
 
-    public IntegralHistograms(float[] image, Rectangle rec, int depth, int numOfBins){
+    public IntegralHistograms(float[] image, Rectangle rec, int depth, int numOfBins) {
         this.numOfBins = numOfBins;
         width = rec.width;
         height = rec.height;
@@ -45,9 +44,9 @@ public class IntegralHistograms {
         return greyLevels;
     }
 
-    private int getBinNumber(float intensityLevel) {
-        int binNumber = (int) Math.floor((intensityLevel -0.001) / interval);
-        
+    public int getBinNumber(float intensityLevel) {
+        int binNumber = (int) Math.floor((intensityLevel - 0.001) / interval);
+
         if (intensityLevel <= histoRanges[1]) {
             return 0;
         } else if (binNumber >= numOfBins - 1 && histoRanges[numOfBins - 1] < intensityLevel) {
@@ -70,7 +69,7 @@ public class IntegralHistograms {
         // first column
         for (int y = 1; y < height; y++) {
             BinNo = getBinNumber(originalImg[y * width]);
-            pointHisto[y * width] = pointHisto[(y -1) * width].clone();
+            pointHisto[y * width] = pointHisto[(y - 1) * width].clone();
             pointHisto[y * width][BinNo]++;
         }
         // H(x,y|b) = H(x-1,y|b) + H(x,y-1|b) - H(x-1,y-1|b) + I(x,y)
@@ -78,7 +77,9 @@ public class IntegralHistograms {
             for (int x = 1; x < width; x++) {
                 BinNo = getBinNumber(originalImg[y * width + x]);
                 for (int b = 0; b < numOfBins; b++) {
-                    pointHisto[y * width + x][b] = pointHisto[y * width + x - 1][b] + pointHisto[(y -1) * width + x][b] - pointHisto[(y -1) * width + x -1][b];
+                    pointHisto[y * width + x][b] = pointHisto[y * width + x - 1][b] 
+                            + pointHisto[(y - 1) * width + x][b] 
+                            - pointHisto[(y - 1) * width + x - 1][b];
                 }
                 pointHisto[y * width + x][BinNo]++;
             }

@@ -18,16 +18,22 @@ public class filterPlugin_ implements PlugInFilter {
     private int bitDepth;
 
     // parameters from dialog
-    private final String[] filterChoices = {"Integral arithmetic mean", "Integral triangular filter", "Integral polynomial filter", "Convolutional polynomial filter"};
-    private final String[] titleAppend = {"null", "integralMeanR", "integralTriR", "integralPolyR", "convoPolyR"};
-    private int titleAppendIdx = 0;
+    private final String[] filterChoices = {
+        "Integral arithmetic mean",
+        "Integral triangular filter",
+        "Integral polynomial filter",
+        "Convolutional polynomial filter",
+        "Integral Hisotram Intensity"
+    };
+
     private enum Filters {
 
-        INT_MEAN, INT_TRI, INT_POLY, CON_POLY
+        INT_MEAN, INT_TRI, INT_POLY, CON_POLY, INT_HIS_INTEN
     };
-    private int radius;
     private Filters filter;
+    private int radius;
     private int numOfBins;  // number of bins for local histogram
+    private double alpha;   // only used in Guassian intensity difference
 
     @Override
     public int setup(String string, ImagePlus ip) {
@@ -44,6 +50,7 @@ public class filterPlugin_ implements PlugInFilter {
         gd.addChoice("Selected Filter", filterChoices, filterChoices[0]);
         gd.addNumericField("window radius", 2, 0);
         gd.addNumericField("Number of bins", 32, 0);
+        gd.addNumericField("Intensity alpha", 0.2, 2);
 
         gd.showDialog();
         if (gd.wasCanceled()) {
@@ -59,9 +66,13 @@ public class filterPlugin_ implements PlugInFilter {
             filter = Filters.INT_POLY;
         } else if (selectedChoice.equals(filterChoices[3])) {
             filter = Filters.CON_POLY;
+        } else if (selectedChoice.equals(filterChoices[4])) {
+            filter = Filters.INT_HIS_INTEN;
         }
+
         radius = (int) gd.getNextNumber();
         numOfBins = (int) gd.getNextNumber();
+        alpha = gd.getNextNumber();
         return true;
     }
 
@@ -73,7 +84,7 @@ public class filterPlugin_ implements PlugInFilter {
         rec = ip.getRoi();
         float[] pixels = (float[]) fp.getPixels();  // oringal image
         IntegralImage integral = new IntegralImage(pixels, rec);// getIntegralImg image
-        
+
         // display getIntegralImg image in new window
 //        show32bitImage(integral.integralImg, rec, "IntegralSum");
 //        integral.initialIntegralImgs4Polynomial();
@@ -86,29 +97,32 @@ public class filterPlugin_ implements PlugInFilter {
         switch (filter) {
             case INT_MEAN:  // integral arithmetic mean filter
                 outImg = sf.integralMean(radius);
-                titleAppendIdx = 1;
+                outputImageTitle = imageTitle + "_integralMeanR" + radius;
                 break;
             case INT_TRI:   // triangular filter
                 outImg = sf.integralTriangular(radius);
-                titleAppendIdx = 2;
+                outputImageTitle = imageTitle + "_integralTriR" + radius;
                 break;
             case INT_POLY:  // polynomial filter
                 outImg = sf.integralPolynomial(radius);
-                titleAppendIdx = 3;
+                outputImageTitle = imageTitle + "_integralPolyR" + radius;
                 break;
             case CON_POLY:
                 outImg = sf.convolutionalPolynomial(radius);
-                titleAppendIdx = 4;
+                outputImageTitle = imageTitle + "_convoPolyR" + radius;
+                break;
+            case INT_HIS_INTEN:
+                IntegralHistograms ih = new IntegralHistograms(pixels, rec, bitDepth, numOfBins);
+                sf.SetIntegralHistograms(ih);
+                outImg = sf.integralHistoIntensityGaussian(radius, alpha);
+                outputImageTitle = imageTitle + "_intHistoIntensityR" + radius + "a" + alpha;
                 break;
             default:
                 outImg = new double[rec.width * rec.height];
-                titleAppendIdx = 0;
+                outputImageTitle = "null";
                 break;
         }
-        outputImageTitle = imageTitle + "_" + titleAppend[titleAppendIdx] + radius;
         show8bitImage(outImg, rec, outputImageTitle);
-        
-        IntegralHistograms ih = new IntegralHistograms(pixels, rec, bitDepth, numOfBins);
     }
 
     private void show8bitImage(double[] image, Rectangle rec, String imageTitle) {
