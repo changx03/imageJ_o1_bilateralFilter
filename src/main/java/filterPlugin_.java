@@ -15,6 +15,7 @@ public class filterPlugin_ implements PlugInFilter {
     private ImagePlus image;
     private String imageTitle;
     private Rectangle rec;
+    private int bitDepth;
 
     // parameters from dialog
     private final String[] filterChoices = {"Integral arithmetic mean", "Integral triangular filter", "Integral polynomial filter", "Convolutional polynomial filter"};
@@ -26,6 +27,7 @@ public class filterPlugin_ implements PlugInFilter {
     };
     private int radius;
     private Filters filter;
+    private int numOfBins;  // number of bins for local histogram
 
     @Override
     public int setup(String string, ImagePlus ip) {
@@ -38,9 +40,10 @@ public class filterPlugin_ implements PlugInFilter {
     }
 
     private boolean showDialog() {
-        GenericDialog gd = new GenericDialog("Filters");
-        gd.addChoice("Filter", filterChoices, filterChoices[0]);
+        GenericDialog gd = new GenericDialog("Integral Filters");
+        gd.addChoice("Selected Filter", filterChoices, filterChoices[0]);
         gd.addNumericField("window radius", 2, 0);
+        gd.addNumericField("Number of bins", 32, 0);
 
         gd.showDialog();
         if (gd.wasCanceled()) {
@@ -58,6 +61,7 @@ public class filterPlugin_ implements PlugInFilter {
             filter = Filters.CON_POLY;
         }
         radius = (int) gd.getNextNumber();
+        numOfBins = (int) gd.getNextNumber();
         return true;
     }
 
@@ -65,6 +69,7 @@ public class filterPlugin_ implements PlugInFilter {
     public void run(ImageProcessor ip) {
         FloatProcessor fp = null;
         fp = ip.toFloat(0, fp);
+        bitDepth = ip.getBitDepth();
         rec = ip.getRoi();
         float[] pixels = (float[]) fp.getPixels();  // oringal image
         IntegralImage integral = new IntegralImage(pixels, rec);// getIntegralImg image
@@ -102,6 +107,8 @@ public class filterPlugin_ implements PlugInFilter {
         }
         outputImageTitle = imageTitle + "_" + titleAppend[titleAppendIdx] + radius;
         show8bitImage(outImg, rec, outputImageTitle);
+        
+        IntegralHistograms ih = new IntegralHistograms(pixels, rec, bitDepth, numOfBins);
     }
 
     private void show8bitImage(double[] image, Rectangle rec, String imageTitle) {
