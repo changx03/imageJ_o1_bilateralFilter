@@ -24,12 +24,13 @@ public class filterPlugin_ implements PlugInFilter {
         "Integral polynomial filter",
         "Convolutional polynomial filter",
         "Integral Hisotram Intensity",
-        "Box triangular Gaussian Bilateral"
+        "Box mean Gaussian Bilateral",
+        "Box triangular Gaussian Bilateral",
+        "Box polynominal Gaussian Bilateral"
     };
 
     private enum Filters {
-
-        INT_MEAN, INT_TRI, INT_POLY, CON_POLY, INT_HIS_INTEN, TRI_GAU_BI
+        INT_MEAN, INT_TRI, INT_POLY, CON_POLY, INT_HIS_INTEN, MEAN_GAU_BI, TRI_GAU_BI, POLY_GAU_BI
     };
     private Filters filter;
     private int radius;
@@ -51,7 +52,7 @@ public class filterPlugin_ implements PlugInFilter {
         gd.addChoice("Selected Filter", filterChoices, filterChoices[0]);
         gd.addNumericField("window radius", 2, 0);
         gd.addNumericField("Number of bins", 32, 0);
-        gd.addNumericField("Intensity alpha", 0.2, 2);
+        gd.addNumericField("Intensity alpha", 0.15, 2);
 
         gd.showDialog();
         if (gd.wasCanceled()) {
@@ -70,7 +71,11 @@ public class filterPlugin_ implements PlugInFilter {
         } else if (selectedChoice.equals(filterChoices[4])) {
             filter = Filters.INT_HIS_INTEN;
         } else if (selectedChoice.equals(filterChoices[5])) {
+            filter = Filters.MEAN_GAU_BI;
+        }else if (selectedChoice.equals(filterChoices[6])) {
             filter = Filters.TRI_GAU_BI;
+        }else if (selectedChoice.equals(filterChoices[7])) {
+            filter = Filters.POLY_GAU_BI;
         }
 
         radius = (int) gd.getNextNumber();
@@ -123,8 +128,20 @@ public class filterPlugin_ implements PlugInFilter {
             case TRI_GAU_BI:
                 ih = new IntegralHistograms(pixels, rec, bitDepth, numOfBins);
                 sf.SetIntegralHistograms(ih);
-                outImg = sf.boxTriGaussian(radius, alpha);
+                outImg = sf.boxGaussian(radius, alpha, BoxFilterType.TRIANGULAR);
                 outputImageTitle = imageTitle + "_TriGauBilateralR" + radius + "a" + alpha;
+                break;
+            case MEAN_GAU_BI:
+                ih = new IntegralHistograms(pixels, rec, bitDepth, numOfBins);
+                sf.SetIntegralHistograms(ih);
+                outImg = sf.boxGaussian(radius, alpha, BoxFilterType.MEAN);
+                outputImageTitle = imageTitle + "_TriMeanBilateralR" + radius + "a" + alpha;
+                break;
+            case POLY_GAU_BI:
+                ih = new IntegralHistograms(pixels, rec, bitDepth, numOfBins);
+                sf.SetIntegralHistograms(ih);
+                outImg = sf.boxGaussian(radius, alpha, BoxFilterType.POLYNOMIAL);
+                outputImageTitle = imageTitle + "_TriPolyBilateralR" + radius + "a" + alpha;
                 break;
             default:
                 outImg = new double[rec.width * rec.height];

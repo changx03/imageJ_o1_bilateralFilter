@@ -166,13 +166,24 @@ public class SpatialFilters {
         return outImg;
     }
     
-    public double[] boxTriGaussian(int radius, double alpha) {
+    public double[] boxGaussian(int radius, double alpha, BoxFilterType type) {
         if(ih == null) {
             throw new NullPointerException();
         }
         int imageSize = height * width;
         double[] outImg = new double[imageSize];
-        double[] boxSpatial = integralTriangular(radius);
+        double[] boxSpatial = null;
+        switch(type) {
+            case MEAN:
+                boxSpatial = integralMean(radius);
+                break;
+            case POLYNOMIAL:
+                boxSpatial = integralPolynomial(radius);
+                break;
+            default:    // dafault as TRIANGULAR spatial filter
+                boxSpatial = integralTriangular(radius);
+                break;
+        }
         double[] intensityMap = integralHistoIntensityGaussian(radius, alpha);
         
         for(int y = 0; y < height; y++) {
